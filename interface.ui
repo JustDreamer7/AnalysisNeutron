@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>485</width>
-    <height>527</height>
+    <width>497</width>
+    <height>511</height>
    </rect>
   </property>
   <property name="font">
@@ -160,8 +160,8 @@ background-color: rgb(255, 255, 255);</string>
    <widget class="QPushButton" name="openDirectory">
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>360</y>
+      <x>310</x>
+      <y>270</y>
       <width>181</width>
       <height>61</height>
      </rect>
@@ -197,7 +197,7 @@ color: rgb(0, 0, 0);</string>
    <widget class="QPushButton" name="openFileDirectory">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>310</x>
       <y>200</y>
       <width>181</width>
       <height>61</height>
@@ -255,6 +255,67 @@ color: rgb(0, 0, 0);</string>
     <property name="text">
      <string>Данные 
  без маски</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButton">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>410</y>
+      <width>95</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>993</string>
+    </property>
+   </widget>
+   <widget class="QRadioButton" name="radioButton_2">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>440</y>
+      <width>231</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Cреднее значение за период</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>260</x>
+      <y>360</y>
+      <width>231</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Calibri</family>
+      <pointsize>10</pointsize>
+      <weight>75</weight>
+      <italic>false</italic>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="text">
+     <string>Выберите P0 для обработки:</string>
     </property>
    </widget>
   </widget>

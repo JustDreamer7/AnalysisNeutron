@@ -1,6 +1,7 @@
 import os
-from datetime import date
-from datetime import timedelta
+# from datetime import date
+# from datetime import timedelta
+from datetime import *
 
 import numpy as np
 import pandas as pd
@@ -57,7 +58,8 @@ def linear(x, a, b):
 
 
 # Длиннокод того, как строяться графики и заполняется ворд
-def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathpic, file1cl, file2cl):
+def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathpic, file1cl, file2cl,
+                  proccessing_pressure, file_mask):
     datedirect = pathpic + '/{}'.format(styear)
     if ~os.path.exists(datedirect):
         try:
@@ -93,87 +95,151 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
 
     plt.rc('font', **font)
 
-    # Перераборать время работы
-
-    # plt.figure(figsize=(18, 10))
-    # plt.xlabel('Дата', fontsize=20)
-    # plt.ylabel('Время работы, ч', fontsize=20)
-    # plt.grid()
-    # plt.minorticks_on()
-    # plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
-    # plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
-    # plt.grid(which='minor',
-    #          color='k',
-    #          linestyle=':')
-    # plt.ylim([0, 25])
-    # plt.xlim([a, b])
-    # plt.plot(worktime['DATE'], worktime['WORKTIME'], marker='s', markersize=15, color='darkblue',
-    #          linewidth='6')
-    # plt.savefig('{}\\{}\\worktime{}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-    #             bbox_inches='tight')
-    # time1path = "{}\\{}\\worktime{}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
     merge_utc = concat_utc(stday, endday, styear, endyear, stmonth, endmonth, file1cl)
     mask_checker = False
     try:
         for i in range(1, 5):
             mask = pd.read_csv(
-                '{}\\Maska{}-{:02}.{:02}.{:02}-{:02}.{:02}.{:02}.dat'.format(path, i, stday, stmonth, styear - 2000,
-                                                                             endday,
-                                                                             endmonth, endyear - 2000),
-                sep='\t')
+                '{}\\Maska_detAll{}.dat'.format(file_mask, i),
+                sep='\t', names=['start', 'end'])
+            mask_without_periods = mask.fillna(0)[mask.fillna(0)['end'] == 0][['start']].reset_index(drop=True)
+            period_mask = mask.dropna().reset_index(drop=True)
+
+            # выделение одиночных выбросов
+            start_time = []
+            start_date = []
+            for j in mask_without_periods['start']:
+                start_time.append(j.split(' ')[1])
+                start_date.append(j.split(' ')[0].split('.')[2] + '-' + j.split(' ')[0].split('.')[1] + '-' +
+                                  j.split(' ')[0].split('.')[0])
+            mask_without_periods['start_time'] = start_time
+            mask_without_periods['start_date'] = start_date
+            mask_without_periods['start_date'] = pd.to_datetime(mask_without_periods['start_date'])
+
+            # выделение периодов
+            start_date = []
+            end_date = []
+            for k in range(len(period_mask['start'])):
+                end_date.append(datetime(int(period_mask['end'][k].split(' ')[0].split('.')[2]),
+                                         int(period_mask['end'][k].split(' ')[0].split('.')[1]),
+                                         int(period_mask['end'][k].split(' ')[0].split('.')[0]),
+                                         int(period_mask['end'][k].split(' ')[1].split(':')[0]),
+                                         int(period_mask['end'][k].split(' ')[1].split(':')[1]),
+                                         int(period_mask['end'][k].split(' ')[1].split(':')[2])))
+                start_date.append(datetime(int(period_mask['start'][k].split(' ')[0].split('.')[2]),
+                                           int(period_mask['start'][k].split(' ')[0].split('.')[1]),
+                                           int(period_mask['start'][k].split(' ')[0].split('.')[0]),
+                                           int(period_mask['start'][k].split(' ')[1].split(':')[0]),
+                                           int(period_mask['start'][k].split(' ')[1].split(':')[1]),
+                                           int(period_mask['start'][k].split(' ')[1].split(':')[2])))
+            period_mask['start_date'] = start_date
+            period_mask['end_date'] = end_date
+
+            new_time = []
+            for g in range(len(merge_utc['time'])):
+                new_time.append(datetime(int(str(merge_utc['DATE'][g]).split(' ')[0].split('-')[0]),
+                                         int(str(merge_utc['DATE'][g]).split(' ')[0].split('-')[1]),
+                                         int(str(merge_utc['DATE'][g]).split(' ')[0].split('-')[2]),
+                                         int(merge_utc['time'][g].split(':')[0]),
+                                         int(merge_utc['time'][g].split(':')[1])))
+            merge_utc['new_format_time'] = new_time
 
             # Непонятно как делать отдельно шумы и нейтроны
-            for j in range(len(mask.index)):
-                merge_utc.loc[merge_utc[(merge_utc['DATE'].isin([mask['DATE'][j]])) & (
-                    merge_utc['time'].isin([mask['TIME'][j]]))].index, 'Nn%s' % i] = 0
-            for j in range(len(mask.index)):
-                merge_utc.loc[merge_utc[(merge_utc['DATE'].isin([mask['DATE'][j]])) & (
-                    merge_utc['time'].isin([mask['TIME'][j]]))].index, 'N_noise%s' % i] = 0
+            for t in range(len(mask_without_periods.index)):
+                merge_utc.loc[merge_utc[(merge_utc['DATE'].isin([mask_without_periods['start_date'][t]])) & (
+                    merge_utc['time'].isin([mask_without_periods['start_time'][t]]))].index, 'Nn%s' % i] = 0
+            for t in range(len(mask_without_periods.index)):
+                merge_utc.loc[merge_utc[(merge_utc['DATE'].isin([mask_without_periods['start_date'][t]])) & (
+                    merge_utc['time'].isin([mask_without_periods['start_time'][t]]))].index, 'N_noise%s' % i] = 0
+
+            for a in range(len(period_mask.index)):
+                merge_utc['Nn%s' % i] = merge_utc['Nn%s' % i].where(
+                    (merge_utc['new_format_time'] < period_mask['start_date'][a]) | (
+                            merge_utc['new_format_time'] > period_mask['end_date'][a]), 0)
+            for a in range(len(period_mask.index)):
+                merge_utc['N_noise%s' % i] = merge_utc['N_noise%s' % i].where(
+                    (merge_utc['new_format_time'] < period_mask['start_date'][a]) | (
+                            merge_utc['new_format_time'] > period_mask['end_date'][a]), 0)
+
     except FileNotFoundError:
         mask_checker = True
         print('Mask-file dont exist')
     mean_pressure_uragan = change_pressure_interval(stday, endday, styear, endyear, stmonth, endmonth, file2cl)
 
-    fig, axs = plt.subplots(figsize=(18, 18), nrows=4, sharex=True)
-    N_bar_koef = []
-    N_0 = []
-    for i in range(1, 5):
-        ax = axs[i - 1]
-        ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
-        if i == 4:
-            ax.set_xlabel('Давление', fontsize=20)
-        ax.set_ylabel('Cкорость  счета, (300с)⁻¹', fontsize=11.5)
-        #     ax.set_ylim([0,500])
-        #     ax.set_xlim([0,df.index.max()])
-        if len(merge_utc[merge_utc['Nn%s' % i] == 0]) != 0:
-            test = []
-            for j in merge_utc[merge_utc['Nn%s' % i] != 0].index.tolist():
-                test.append(mean_pressure_uragan[j])
-            ax.scatter([x - 993 for x in test], merge_utc[merge_utc['Nn%s' % i] != 0]['Nn%s' % i], label='N%s' % i, s=5)
-            param, param_cov = curve_fit(linear, [x - 993 for x in test],
-                                         merge_utc[merge_utc['Nn%s' % i] != 0]['Nn%s' % i])
-            fit_line = [y * param[0] + param[1] for y in [x - 993 for x in test]]
-            ax.scatter([x - 993 for x in test], fit_line, s=6)
-            N_bar_koef.append(param[0] / param[1] * 100)
-            N_0.append(param[1])
-        else:
-            ax.scatter([x - 993 for x in mean_pressure_uragan], merge_utc['Nn%s' % i], label='N%s' % i, s=5)
-            param, param_cov = curve_fit(linear, [x - 993 for x in mean_pressure_uragan], merge_utc['Nn%s' % i])
-            fit_line = [y * param[0] + param[1] for y in [x - 993 for x in mean_pressure_uragan]]
-            ax.scatter([x - 993 for x in mean_pressure_uragan], fit_line, s=6)
-            N_bar_koef.append(param[0] / param[1] * 100)
-            N_0.append(param[1])
+    def make_corr_data(type_of_impulse, pressure, type_of_impulse_sign, pathpic, styear, stday, stmonth, endday,
+                       endmonth):
+        fig, axs = plt.subplots(figsize=(18, 18), nrows=4, sharex=True)
+        N_bar_koef = []
+        N_0 = []
+        for i in range(1, 5):
+            ax = axs[i - 1]
+            ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
+            if i == 5:
+                ax.set_xlabel('Давление', fontsize=20)
+            ax.set_ylabel(type_of_impulse_sign + r'$, (300с)^{-1}$', fontsize=15)
+            #     ax.set_ylim([0,500])
+            #     ax.set_xlim([0,df.index.max()])
+            if len(merge_utc[merge_utc[type_of_impulse + '%s' % i] == 0]) != 0:
+                test = []
+                for j in merge_utc[merge_utc[type_of_impulse + '%s' % i] != 0].index.tolist():
+                    test.append(mean_pressure_uragan[j])
+                ax.scatter([x - pressure for x in test],
+                           merge_utc[merge_utc[type_of_impulse + '%s' % i] != 0][type_of_impulse + '%s' % i],
+                           label=type_of_impulse + '%s' % i, s=5)
+                param, param_cov = curve_fit(linear, [x - pressure for x in test],
+                                             merge_utc[merge_utc[type_of_impulse + '%s' % i] != 0][
+                                                 type_of_impulse + '%s' % i])
+                fit_line = [y * param[0] + param[1] for y in [x - pressure for x in test]]
+                ax.scatter([x - pressure for x in test], fit_line, s=6)
+                N_bar_koef.append(param[0] / param[1] * 100)
+                N_0.append(param[1])
+            else:
+                ax.scatter([x - pressure for x in mean_pressure_uragan], merge_utc['Nn%s' % i], label='N%s' % i, s=5)
+                param, param_cov = curve_fit(linear, [x - pressure for x in mean_pressure_uragan],
+                                             merge_utc['Nn%s' % i])
+                fit_line = [y * param[0] + param[1] for y in [x - pressure for x in mean_pressure_uragan]]
+                ax.scatter([x - pressure for x in mean_pressure_uragan], fit_line, s=6)
+                N_bar_koef.append(param[0] / param[1] * 100)
+                N_0.append(param[1])
 
-    # На случай если нужно будет добавить в график
-    plt.savefig('{}\\{}\\Nn(P){}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-                bbox_inches='tight')
-    Nn_to_P_path = "{}\\{}\\Nn(P){}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
+        plt.savefig(
+            '{}\\{}\\{}(P){:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, type_of_impulse, stday, stmonth,
+                                                              endday, endmonth),
+            bbox_inches='tight')
 
-    press_for_fixed_N = []
-    for i in range(4):
-        press_for_fixed_N.append(
-            (mean_pressure_uragan - np.mean(mean_pressure_uragan)) * N_bar_koef[i] / 100 * N_0[i])
+        press_for_fixed_N = []
+        for i in range(4):
+            press_for_fixed_N.append(
+                [(x - pressure) * N_bar_koef[i] / 100 * N_0[i] for x in mean_pressure_uragan])
 
+        return press_for_fixed_N, N_bar_koef
+
+    if proccessing_pressure == 'mean_value':
+        press_for_fixed_N, N_bar_koef = make_corr_data('Nn', np.mean(mean_pressure_uragan), 'Скорость счета', pathpic,
+                                                       styear,
+                                                       stday,
+                                                       stmonth, endday,
+                                                       endmonth)
+        press_for_fixed_N_noise, N_noise_bar_koef = make_corr_data('N_noise', np.mean(mean_pressure_uragan),
+                                                                   'Скорость счета шумов',
+                                                                   pathpic,
+                                                                   styear, stday,
+                                                                   stmonth, endday,
+                                                                   endmonth)
+    else:
+        press_for_fixed_N, N_bar_koef = make_corr_data('Nn', 993, 'Скорость счета', pathpic, styear,
+                                                       stday,
+                                                       stmonth, endday,
+                                                       endmonth)
+        press_for_fixed_N_noise, N_noise_bar_koef = make_corr_data('N_noise', 993, 'Скорость счета шумов',
+                                                                   pathpic,
+                                                                   styear, stday,
+                                                                   stmonth, endday,
+                                                                   endmonth)
+
+    Nn_to_P_path = "{}\\{}\\Nn(P){:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
+    Nnoise_to_P_path = "{}\\{}\\N_noise(P){:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
+                                                                              endmonth)
     fig, axs = plt.subplots(figsize=(18, 18), nrows=4, sharex=True)
     for i in range(1, 5):
         ax = axs[i - 1]
@@ -189,56 +255,16 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         ax.minorticks_on()
         ax.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
         ax.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
-        ax.plot(merge_utc.index, merge_utc['Nn%s' % i] + press_for_fixed_N[i - 1], label='N%s' % i, linewidth=1,
-                color='black')
-        ax.plot(merge_utc.index, merge_utc['Nn%s' % i], label='N%s' % i, linewidth=1, color='red')
+        ax.plot(merge_utc.index, merge_utc['Nn%s' % i], label='N%s' % i, linewidth=1, color='black')
+        ax.plot(merge_utc.index, merge_utc['Nn%s' % i] - press_for_fixed_N[i - 1], label='N%s' % i, linewidth=1,
+                color='red')
+
         ax0.plot(range(0, len(mean_pressure_uragan)), mean_pressure_uragan, linewidth=2, color='blue')
         ax.set_xticks(list(range(0, merge_utc.index.max(), 288 * 4)))
         ax.set_xticklabels(merge_utc['DATE'].dt.date.unique().tolist()[::4])
-    plt.savefig('{}\\{}\\Nn300c{}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+    plt.savefig('{}\\{}\\Nn300c{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
                 bbox_inches='tight')
-    Nn_path = "{}\\{}\\Nn300c{}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
-
-    fig, axs = plt.subplots(figsize=(18, 18), nrows=4, sharex=True)
-    N_noise_bar_koef = []
-    N_noise_0 = []
-    for i in range(1, 5):
-        ax = axs[i - 1]
-        ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
-        if i == 4:
-            ax.set_xlabel('Давление', fontsize=20)
-        ax.set_ylabel('Cкорость счета шумов, (300с)⁻¹', fontsize=13)
-        #     ax.set_ylim([0,500])
-        #     ax.set_xlim([0,df.index.max()])
-        if len(merge_utc[merge_utc['N_noise%s' % i] == 0]) != 0:
-            test = []
-            for j in merge_utc[merge_utc['N_noise%s' % i] != 0].index.tolist():
-                test.append(mean_pressure_uragan[j])
-            ax.scatter([x - 993 for x in test], merge_utc[merge_utc['N_noise%s' % i] != 0]['N_noise%s' % i],
-                       label='N%s' % i, s=5)
-            param, param_cov = curve_fit(linear, [x - 993 for x in test],
-                                         merge_utc[merge_utc['N_noise%s' % i] != 0]['N_noise%s' % i])
-            fit_line = [y * param[0] + param[1] for y in [x - 993 for x in test]]
-            ax.scatter([x - 993 for x in test], fit_line, s=6)
-            N_noise_bar_koef.append(param[0] / param[1] * 100)
-            N_noise_0.append(param[1])
-        else:
-            ax.scatter([x - 993 for x in mean_pressure_uragan], merge_utc['N_noise%s' % i], label='N%s' % i, s=5)
-            param, param_cov = curve_fit(linear, [x - 993 for x in mean_pressure_uragan], merge_utc['N_noise%s' % i])
-            fit_line = [y * param[0] + param[1] for y in [x - 993 for x in mean_pressure_uragan]]
-            ax.scatter([x - 993 for x in mean_pressure_uragan], fit_line, s=6)
-            N_noise_bar_koef.append(param[0] / param[1] * 100)
-            N_noise_0.append(param[1])
-
-    # На случай если нужно будет добавить в график
-    plt.savefig('{}\\{}\\Nnoise(P){}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-                bbox_inches='tight')
-    Nnoise_to_P_path = "{}\\{}\\Nnoise(P){}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
-
-    press_for_fixed_N_noise = []
-    for i in range(4):
-        press_for_fixed_N_noise.append(
-            (mean_pressure_uragan - np.mean(mean_pressure_uragan)) * N_noise_bar_koef[i] / 100 * N_noise_0[i])
+    Nn_path = "{}\\{}\\Nn300c{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
 
     fig, axs = plt.subplots(figsize=(18, 18), nrows=4, sharex=True)
     for i in range(1, 5):
@@ -256,16 +282,18 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         ax.minorticks_on()
         ax.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
         ax.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
-        ax.plot(merge_utc.index, merge_utc['N_noise%s' % i] + press_for_fixed_N_noise[i - 1], label='N%s' % i,
+        ax.plot(merge_utc.index, merge_utc['N_noise%s' % i], label='N%s' % i, linewidth=1, color='black')
+        ax.plot(merge_utc.index, merge_utc['N_noise%s' % i] - press_for_fixed_N_noise[i - 1], label='N%s' % i,
                 linewidth=1,
-                color='black')
-        ax.plot(merge_utc.index, merge_utc['N_noise%s' % i], label='N%s' % i, linewidth=1, color='red')
+                color='red')
         ax0.plot(range(0, len(mean_pressure_uragan)), mean_pressure_uragan, linewidth=2, color='blue')
         ax.set_xticks(list(range(0, merge_utc.index.max(), 288 * 4)))
         ax.set_xticklabels(merge_utc['DATE'].dt.date.unique().tolist()[::4])
-    plt.savefig('{}\\{}\\Nnoise300c{}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-                bbox_inches='tight')
-    Nnoise_path = "{}\\{}\\Nnoise300c{}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
+    plt.savefig(
+        '{}\\{}\\Nnoise300c{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+        bbox_inches='tight')
+    Nnoise_path = "{}\\{}\\Nnoise300c{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
+                                                                         endmonth)
 
     frame = merge_utc[
         (merge_utc['Nn1'] != 0) & (merge_utc['Nn2'] != 0) & (merge_utc['Nn3'] != 0) & (merge_utc['Nn4'] != 0)]
@@ -310,10 +338,12 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     for i in range(1, 5):
         plt.plot(R_distribution.index, R_distribution['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
     plt.legend(loc="upper right")
-    plt.savefig('{}\\{}\\R_distribution{}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-                bbox_inches='tight')
-    R_distribution_path = "{}\\{}\\R_distribution{}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday,
-                                                                         endmonth)
+    plt.savefig(
+        '{}\\{}\\R_distribution{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+        bbox_inches='tight')
+    R_distribution_path = "{}\\{}\\R_distribution{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth,
+                                                                                     endday,
+                                                                                     endmonth)
 
     Front_time = pd.read_csv(
         '{}\\4TF{:02}-{:02}.{:02}'.format('C:\\Users\\JustDreamer\\Desktop\\files to check\\neutron',
@@ -344,10 +374,11 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     for i in range(1, 5):
         plt.plot(Front_time.index, Front_time['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
     plt.legend(loc="upper right")
-    plt.savefig('{}\\{}\\Front_time{}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-                bbox_inches='tight')
-    Front_time_path = "{}\\{}\\Front_time{}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday,
-                                                                 endmonth)
+    plt.savefig(
+        '{}\\{}\\Front_time{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+        bbox_inches='tight')
+    Front_time_path = "{}\\{}\\Front_time{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
+                                                                             endmonth)
 
     distribution_cols = []
     for i in range(4):
@@ -381,8 +412,9 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     Noiseline = []
     for i in range(1, 5):
         n_line, = plt.plot(N_amp.index, N_amp['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
-        noise_line, = plt.plot(N_amp.index, N_amp['noise%s' % i], label='Детектор %s' % i, linewidth=4.5)
         Nline.append(n_line)
+    for i in range(1, 5):
+        noise_line, = plt.plot(N_amp.index, N_amp['noise%s' % i], label='Детектор %s' % i, linewidth=4.5)
         Noiseline.append(noise_line)
     box_1 = {'facecolor': 'white',  # цвет области
              'edgecolor': 'red',  # цвет крайней линии
@@ -391,10 +423,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     first_legend = plt.legend(handles=Nline, loc='upper center', bbox_to_anchor=(0.75, 1), title='Нейтроны')
     plt.gca().add_artist(first_legend)
     plt.legend(handles=Noiseline, loc='upper right', title='Шумы')
-    plt.savefig('{}\\{}\\N_amp{}-{}-{}-{}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+    plt.savefig('{}\\{}\\N_amp{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
                 bbox_inches='tight')
-    N_amp_path = "{}\\{}\\N_amp{}-{}-{}-{}.png".format(pathpic, styear, stday, stmonth, endday,
-                                                       endmonth)
+    N_amp_path = "{}\\{}\\N_amp{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
+                                                                   endmonth)
 
     doc = Document()
 
@@ -430,9 +462,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     font.italic = True
 
     head = doc.add_paragraph(
-        'Справка о работе установки «Нейтрон» в период с {}.{:02}.{} по {}.{:02}.{} '.format(stday, stmonth, styear,
-                                                                                             endday, endmonth,
-                                                                                             endyear),
+        'Справка о работе установки «Нейтрон» в период с {:02}.{:02}.{} по {:02}.{:02}.{} '.format(stday, stmonth,
+                                                                                                   styear,
+                                                                                                   endday, endmonth,
+                                                                                                   endyear),
         style='Headstyle')
     head.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
@@ -505,10 +538,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     err.cell(0, 4).merge(err.cell(1, 4))
 
     for i in range(2, len(failstr_begin) + 2):
-        err.cell(i, 0).text = str(timestop['claster'][i - 1])
-        err.cell(i, 1).text = str(failstr_begin[i - 1])
-        err.cell(i, 2).text = str(failstr_end[i - 1])
-        err.cell(i, 3).text = str(lost_minutes[i - 1])
+        err.cell(i, 0).text = str(timestop['claster'][i - 2])
+        err.cell(i, 1).text = str(failstr_begin[i - 2])
+        err.cell(i, 2).text = str(failstr_end[i - 2])
+        err.cell(i, 3).text = str(lost_minutes[i - 2])
         err.cell(i, 4).text = ' '
 
     for row in range(2):
@@ -674,6 +707,30 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     space = doc.add_paragraph()
 
     doc.add_picture(Nnoise_path, width=Inches(7.5), height=Inches(7.9))
+    last_paragraph = doc.paragraphs[-1]
+    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    run = doc.add_paragraph().add_run()
+    run.add_break(WD_BREAK.PAGE)
+
+    desc = doc.add_paragraph('Зависимости скорости счета нейтронных импульсов от давления', style='Headgraf')
+    desc.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    space = doc.add_paragraph()
+
+    doc.add_picture(Nn_to_P_path, width=Inches(7.5), height=Inches(7.9))
+    last_paragraph = doc.paragraphs[-1]
+    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    run = doc.add_paragraph().add_run()
+    run.add_break(WD_BREAK.PAGE)
+
+    desc = doc.add_paragraph('Зависимости скорости счета шумовых импульсов от давления', style='Headgraf')
+    desc.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    space = doc.add_paragraph()
+
+    doc.add_picture(Nnoise_to_P_path, width=Inches(7.5), height=Inches(7.9))
     last_paragraph = doc.paragraphs[-1]
     last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 

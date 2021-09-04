@@ -1,4 +1,4 @@
-# Form implementation generated from reading ui file 'interface.ui'
+# Form implementation generated from reading ui file '.\interface.ui'
 #
 # Created by: PyQt6 UI code generator 6.1.0
 #
@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(485, 527)
+        MainWindow.resize(497, 511)
         font = QtGui.QFont()
         font.setItalic(False)
         font.setStrikeOut(False)
@@ -78,7 +78,7 @@ class Ui_MainWindow(object):
         self.label_4.setFont(font)
         self.label_4.setObjectName("label_4")
         self.openDirectory = QtWidgets.QPushButton(self.centralwidget)
-        self.openDirectory.setGeometry(QtCore.QRect(290, 360, 181, 61))
+        self.openDirectory.setGeometry(QtCore.QRect(310, 270, 181, 61))
         font = QtGui.QFont()
         font.setFamily("Calibri")
         font.setPointSize(13)
@@ -94,7 +94,7 @@ class Ui_MainWindow(object):
         self.openDirectory.setAutoExclusive(True)
         self.openDirectory.setObjectName("openDirectory")
         self.openFileDirectory = QtWidgets.QPushButton(self.centralwidget)
-        self.openFileDirectory.setGeometry(QtCore.QRect(290, 200, 181, 61))
+        self.openFileDirectory.setGeometry(QtCore.QRect(310, 200, 181, 61))
         font = QtGui.QFont()
         font.setFamily("Calibri")
         font.setPointSize(13)
@@ -120,6 +120,31 @@ class Ui_MainWindow(object):
         self.runPassport_2.setStyleSheet("background-color: rgb(255, 255, 255);\n"
 "color: rgb(0, 0, 0);")
         self.runPassport_2.setObjectName("runPassport_2")
+        self.radioButton = QtWidgets.QRadioButton(self.centralwidget)
+        self.radioButton.setGeometry(QtCore.QRect(260, 410, 95, 20))
+        font = QtGui.QFont()
+        font.setPointSize(8)
+        font.setBold(True)
+        font.setWeight(75)
+        self.radioButton.setFont(font)
+        self.radioButton.setObjectName("radioButton")
+        self.radioButton_2 = QtWidgets.QRadioButton(self.centralwidget)
+        self.radioButton_2.setGeometry(QtCore.QRect(260, 440, 231, 20))
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.radioButton_2.setFont(font)
+        self.radioButton_2.setObjectName("radioButton_2")
+        self.label_5 = QtWidgets.QLabel(self.centralwidget)
+        self.label_5.setGeometry(QtCore.QRect(260, 360, 231, 31))
+        font = QtGui.QFont()
+        font.setFamily("Calibri")
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setItalic(False)
+        font.setWeight(75)
+        self.label_5.setFont(font)
+        self.label_5.setObjectName("label_5")
         MainWindow.setCentralWidget(self.centralwidget)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
@@ -141,3 +166,6 @@ class Ui_MainWindow(object):
 " файлов Нейтрон"))
         self.runPassport_2.setText(_translate("MainWindow", "Данные \n"
 " без маски"))
+        self.radioButton.setText(_translate("MainWindow", "993"))
+        self.radioButton_2.setText(_translate("MainWindow", "Cреднее значение за период"))
+        self.label_5.setText(_translate("MainWindow", "Выберите P0 для обработки:"))

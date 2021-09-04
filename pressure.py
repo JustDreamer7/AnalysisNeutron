@@ -1,28 +1,29 @@
-import pandas as pd
 from datetime import date
+
+import pandas as pd
 
 
 def pressure(stDay, endDay, stYear, endYear, stMonth, endMonth, filecl):
     cols = ['DateTime', 'PD', 'TD', 'Pdatch', 'Temper']
     df = pd.DataFrame(columns=cols)
-    daterange = pd.period_range(date(stYear, stMonth, stDay), date(endYear, endMonth, endDay), freq = 'M')
+    daterange = pd.period_range(date(stYear, stMonth, stDay), date(endYear, endMonth, endDay), freq='M')
     for single_date in daterange:
         try:
             nms = ['DateTime', 'PD', 'TD', 'Pdatch', 'Temper']
             timework = pd.read_csv(
                 '{}\Press{}_{:02}.dat'.format(filecl,
-                                                     single_date.year,
-                                                     single_date.month
-                                                     ),
+                                              single_date.year,
+                                              single_date.month
+                                              ),
                 sep='\t', skipinitialspace=True)
             timework = timework.dropna(axis=1, how='all')
             timework.columns = nms
             df = pd.concat([df, timework], ignore_index=True)
         except:
             print("такого файла нит Press{}_{:02}.dat".format(
-                                                     single_date.year,
-                                                     single_date.month
-                                                     ))
+                single_date.year,
+                single_date.month
+            ))
     a = []
     b = []
     c = []
