@@ -12,7 +12,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(497, 511)
+        MainWindow.resize(497, 532)
         font = QtGui.QFont()
         font.setItalic(False)
         font.setStrikeOut(False)
@@ -25,7 +25,7 @@ class Ui_MainWindow(object):
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.runPassport = QtWidgets.QPushButton(self.centralwidget)
-        self.runPassport.setGeometry(QtCore.QRect(40, 400, 131, 61))
+        self.runPassport.setGeometry(QtCore.QRect(40, 420, 131, 61))
         font = QtGui.QFont()
         font.setFamily("Calibri")
         font.setPointSize(14)
@@ -110,7 +110,7 @@ class Ui_MainWindow(object):
         self.openFileDirectory.setAutoExclusive(True)
         self.openFileDirectory.setObjectName("openFileDirectory")
         self.runPassport_2 = QtWidgets.QPushButton(self.centralwidget)
-        self.runPassport_2.setGeometry(QtCore.QRect(40, 330, 131, 61))
+        self.runPassport_2.setGeometry(QtCore.QRect(40, 340, 131, 61))
         font = QtGui.QFont()
         font.setFamily("Calibri")
         font.setPointSize(14)
@@ -168,4 +168,4 @@ class Ui_MainWindow(object):
 " без маски"))
         self.radioButton.setText(_translate("MainWindow", "993"))
         self.radioButton_2.setText(_translate("MainWindow", "Cреднее значение за период"))
-        self.label_5.setText(_translate("MainWindow", "Выберите P0 для обработки:"))
+        self.label_5.setText(_translate("MainWindow", "Выберите P0:"))

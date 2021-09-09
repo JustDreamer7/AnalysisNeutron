@@ -311,10 +311,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     # Прописать рандомную функцию выбора даты
     # Заменить название рисунков пути к распределениям на даты из рандомной функции
     R_distribution = pd.read_csv(
-        '{}\\4R{:02}-{:02}.{:02}'.format('C:\\Users\\JustDreamer\\Desktop\\files to check\\neutron',
-                                         b.month,
-                                         b.day,
-                                         b.year - 2000),
+        '{}\\sp\\4R{:02}-{:02}.{:02}'.format(file1cl,
+                                             b.month,
+                                             b.day,
+                                             b.year - 2000),
         sep=' ', header=None, skipinitialspace=True, index_col=0)
     R_distribution = R_distribution.dropna(axis=1, how='all')
     R_distribution.columns = distribution_cols
@@ -346,10 +346,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
                                                                                      endmonth)
 
     Front_time = pd.read_csv(
-        '{}\\4TF{:02}-{:02}.{:02}'.format('C:\\Users\\JustDreamer\\Desktop\\files to check\\neutron',
-                                          b.month,
-                                          b.day,
-                                          b.year - 2000),
+        '{}\\sp\\4TF{:02}-{:02}.{:02}'.format(file1cl,
+                                              b.month,
+                                              b.day,
+                                              b.year - 2000),
         sep=' ', header=None, skipinitialspace=True, index_col=0)
     Front_time = Front_time.dropna(axis=1, how='all')
     Front_time.columns = distribution_cols
@@ -387,10 +387,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         distribution_cols.append("noise%s" % (i + 1))
 
     N_amp = pd.read_csv(
-        '{}\\4sp{:02}-{:02}.{:02}'.format('C:\\Users\\JustDreamer\\Desktop\\files to check\\neutron',
-                                          b.month,
-                                          b.day,
-                                          b.year - 2000),
+        '{}\\sp\\4sp{:02}-{:02}.{:02}'.format(file1cl,
+                                              b.month,
+                                              b.day,
+                                              b.year - 2000),
         sep=' ', header=None, skipinitialspace=True, index_col=0)
     N_amp = N_amp.dropna(axis=1, how='all')
     N_amp.columns = distribution_cols

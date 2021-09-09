@@ -8,7 +8,7 @@ import os
 from datetime import datetime
 
 from PyQt6 import QtCore, QtWidgets
-# from PyQt6.QtWidgets import *
+from PyQt6.QtWidgets import *
 from PyQt6.QtWidgets import QFileDialog
 
 from First_Proccessing import First_Proccessing
@@ -27,7 +27,14 @@ class Passport(QtWidgets.QMainWindow, Ui_MainWindow):
         self.setupUi(self)
         self.runPassport.pressed.connect(self.onClick)
         self.runPassport_2.pressed.connect(self.onFirst_Click)
-        # self.radioButton.setChecked(True)
+        self.button_group = QButtonGroup()
+        self.button_group.addButton(self.radioButton)
+        self.button_group.addButton(self.radioButton_2)
+        # self.button_group_2 = QButtonGroup()
+        # self.button_group_2.addButton(self.radioButton_4)
+        # self.button_group_2.addButton(self.radioButton_3)
+        self.radioButton.setChecked(True)
+        # self.radioButton_3.setChecked(True)
         # self.radioButton.toggle.connect(self.on_Radio_Click)
         # self.radioButton_2.toggle.connect(self.on_Radio_Click)
         self.openDirectory.pressed.connect(self.openDrctry)
@@ -101,10 +108,15 @@ class Passport(QtWidgets.QMainWindow, Ui_MainWindow):
     def onFirst_Click(self):
         # описание работы кнопки получения данных для составления маски
         proccessing_pressure = 0
+        # proccessing_main_file = 0
         if self.radioButton.isChecked():
             proccessing_pressure = 993
         elif self.radioButton_2.isChecked():
             proccessing_pressure = 'mean_value'
+        # if self.radioButton_3.isChecked():
+        #     proccessing_main_file = 'utc'
+        # elif self.radioButton_4.isChecked():
+        #     proccessing_main_file = 'dt'
         strtDate = self.dateEdit.dateTime().toString('dd MM yyyy')
         endDate = self.dateEdit_2.dateTime().toString('dd MM yyyy')
         lst = []
@@ -149,10 +161,15 @@ class Passport(QtWidgets.QMainWindow, Ui_MainWindow):
         strtDate = self.dateEdit.dateTime().toString('dd MM yyyy')
         endDate = self.dateEdit_2.dateTime().toString('dd MM yyyy')
         proccessing_pressure = 0
+        # proccessing_main_file = 0
         if self.radioButton.isChecked():
             proccessing_pressure = 993
         elif self.radioButton_2.isChecked():
             proccessing_pressure = 'mean_value'
+        # if self.radioButton_3.isChecked():
+        #     proccessing_main_file = 'utc'
+        # elif self.radioButton_4.isChecked():
+        #     proccessing_main_file = 'dt'
         lst = []
         with open('pathpass.ini', 'r') as f:
             dirlist = f.read()
