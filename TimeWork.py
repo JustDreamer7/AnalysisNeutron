@@ -21,7 +21,7 @@ def timeWork(stDay, endDay, stYear, endYear, stMonth, endMonth, filecl):
         try:
             timelist = []
             timework = pd.read_csv(
-                '{}\\n_utc_{:02}-{:02}-{:02}.txt'.format(filecl,
+                '{}\\utc\\n_utc_{:02}-{:02}-{:02}.txt'.format(filecl,
                                                          single_date.date().year,
                                                          single_date.date().month,
                                                          single_date.date().day

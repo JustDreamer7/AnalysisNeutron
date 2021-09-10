@@ -17,7 +17,7 @@ def all_merge(stDay, endDay, stYear, endYear, stMonth, endMonth, filecl):
     for single_date in daterange:
         try:
             a_fr4 = pd.read_csv(
-                '{}\\n_utc_{:02}-{:02}-{:02}.txt'.format(filecl,
+                '{}\\utc\\n_utc_{:02}-{:02}-{:02}.txt'.format(filecl,
                                                          single_date.date().year,
                                                          single_date.date().month,
                                                          single_date.date().day

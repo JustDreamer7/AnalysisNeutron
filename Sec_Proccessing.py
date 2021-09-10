@@ -346,7 +346,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
                                                                                      endmonth)
 
     Front_time = pd.read_csv(
-        '{}\\sp\\4TF{:02}-{:02}.{:02}'.format(file1cl,
+        '{}\\sp\\4Tf{:02}-{:02}.{:02}'.format(file1cl,
                                               b.month,
                                               b.day,
                                               b.year - 2000),
