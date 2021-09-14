@@ -30,19 +30,34 @@ def pressure(stDay, endDay, stYear, endYear, stMonth, endMonth, filecl):
     d = []
     e = []
     g = []
-    for i in df['DateTime']:
-        a.append(i.split(' ')[1])
-        b.append(i.split(' ')[0])
-        c.append(int(i.split(' ')[0].split('.')[0]))
-        d.append(int(i.split(' ')[0].split('.')[1]))
-        e.append(int(i.split(' ')[0].split('.')[2]))
-        g.append(int(i.split(' ')[1].split(':')[1]))
+    f = []
+    k = []
+    test = df.isna()
+    # print(test)
+    print(test[test['DateTime'] == True].index)
+    for i in test[test['DateTime'] == True].index:
+        print(df[df.index == i])
+    try:
+        for i in df['DateTime']:
+            a.append(str(i).split(' ')[1])
+            b.append(str(i).split(' ')[0])
+            c.append(int(str(i).split(' ')[0].split('.')[0]))
+            d.append(int(str(i).split(' ')[0].split('.')[1]))
+            e.append(int(str(i).split(' ')[0].split('.')[2]))
+            g.append(int(str(i).split(' ')[1].split(':')[1]))
+            f.append(int(str(i).split(' ')[1].split(':')[0]))
+            k.append(int(str(i).split(' ')[1].split(':')[2]))
+    except:
+        # print(df[df['DateTime'] == i])
+        print(str(i) + ' - Проблемы с давлением Урагана')
     df['Time'] = a
     df['Date'] = b
     df['Day'] = c
     df['Month'] = d
     df['Year'] = e
     df['Minutes'] = g
+    df['Hours'] = f
+    df['Seconds'] = k
     del df['DateTime']
     df = df.drop(df[(df['Year'] <= stYear) & (df['Month'] <= stMonth) & (df['Day'] < stDay)].index)
     df = df.drop(df[(df['Year'] >= endYear) & (df['Month'] >= endMonth) & (df['Day'] > endDay)].index)
