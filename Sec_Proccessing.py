@@ -600,7 +600,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     # Переработать близко с предыдущей таблицей
     err = doc.add_table(len(failstr_begin) + 2, 5, doc.styles['Table Grid'])
     # err.alignment = WD_TABLE_ALIGNMENT.CENTER
-    err.cell(0, 0).text = '№ кластера'
+    err.cell(0, 0).text = '№'
     err.cell(0, 0).merge(err.cell(1, 0))
     err.cell(0, 1).text = 'Время простоя'
     err.cell(1, 1).text = 'c'
