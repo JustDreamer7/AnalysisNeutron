@@ -192,6 +192,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         fig, axs = plt.subplots(figsize=(18, 18), nrows=4, sharex=True)
         N_bar_koef = []
         N_0 = []
+        B_koef = []
         for i in range(1, 5):
             ax = axs[i - 1]
             ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
@@ -217,6 +218,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
                 ax.scatter([x - pressure for x in test], fit_line, s=6)
                 N_bar_koef.append(param[0] / param[1] * 100)
                 N_0.append(param[1])
+                B_koef.append(param[0])
             else:
                 ax.scatter([x - pressure for x in mean_pressure_uragan], merge_utc[type_of_impulse + '%s' % i],
                            label=type_of_impulse + '%s' % i, s=5)
@@ -226,6 +228,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
                 ax.scatter([x - pressure for x in mean_pressure_uragan], fit_line, s=6)
                 N_bar_koef.append(param[0] / param[1] * 100)
                 N_0.append(param[1])
+                B_koef.append(param[0])
 
         plt.savefig(
             '{}\\{}\\{}(P){:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, type_of_impulse, stday, stmonth,
@@ -242,30 +245,32 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
                     intermediate_corr.append(0)
             press_for_fixed_N.append(intermediate_corr)
 
-        return press_for_fixed_N, N_bar_koef
+        return press_for_fixed_N, N_bar_koef, B_koef
 
     if proccessing_pressure == 'mean_value':
-        press_for_fixed_N, N_bar_koef = make_corr_data('Nn', np.mean(mean_pressure_uragan), 'Скорость счета', pathpic,
-                                                       styear,
-                                                       stday,
-                                                       stmonth, endday,
-                                                       endmonth)
-        press_for_fixed_N_noise, N_noise_bar_koef = make_corr_data('N_noise', np.mean(mean_pressure_uragan),
-                                                                   'Скорость счета шумов',
-                                                                   pathpic,
-                                                                   styear, stday,
-                                                                   stmonth, endday,
-                                                                   endmonth)
+        press_for_fixed_N, N_bar_koef, B_koef = make_corr_data('Nn', np.mean(mean_pressure_uragan), 'Скорость счета',
+                                                               pathpic,
+                                                               styear,
+                                                               stday,
+                                                               stmonth, endday,
+                                                               endmonth)
+        press_for_fixed_N_noise, N_noise_bar_koef, B_noise_koef = make_corr_data('N_noise',
+                                                                                 np.mean(mean_pressure_uragan),
+                                                                                 'Скорость счета шумов',
+                                                                                 pathpic,
+                                                                                 styear, stday,
+                                                                                 stmonth, endday,
+                                                                                 endmonth)
     else:
-        press_for_fixed_N, N_bar_koef = make_corr_data('Nn', 993, 'Скорость счета', pathpic, styear,
-                                                       stday,
-                                                       stmonth, endday,
-                                                       endmonth)
-        press_for_fixed_N_noise, N_noise_bar_koef = make_corr_data('N_noise', 993, 'Скорость счета шумов',
-                                                                   pathpic,
-                                                                   styear, stday,
-                                                                   stmonth, endday,
-                                                                   endmonth)
+        press_for_fixed_N, N_bar_koef, B_koef = make_corr_data('Nn', 993, 'Скорость счета', pathpic, styear,
+                                                               stday,
+                                                               stmonth, endday,
+                                                               endmonth)
+        press_for_fixed_N_noise, N_noise_bar_koef, B_noise_koef = make_corr_data('N_noise', 993, 'Скорость счета шумов',
+                                                                                 pathpic,
+                                                                                 styear, stday,
+                                                                                 stmonth, endday,
+                                                                                 endmonth)
 
     Nn_to_P_path = "{}\\{}\\Nn(P){:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday, endmonth)
     Nnoise_to_P_path = "{}\\{}\\N_noise(P){:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
@@ -278,6 +283,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] != merge_utc['Nn%s' % i], 0, inplace=True)
         corr_N.append(merge_utc['corr_N%s' % i])
         ax = axs[i - 1]
+        if len(merge_utc[merge_utc['Nn%s' % i] == 0]) != 0:
+            y_min = np.min(merge_utc[merge_utc['Nn%s' % i] > 5]['Nn%s' % i]) - 30
+            y_max = np.max(merge_utc[merge_utc['Nn%s' % i] > 5]['Nn%s' % i]) + 30
+            ax.set_ylim([y_min, y_max])
         ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
         ax.grid()
         ax0 = ax.twinx()
@@ -310,6 +319,10 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         corr_N_noise.append(merge_utc['corr_N_noise%s' % i])
         ax = axs[i - 1]
         ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
+        if len(merge_utc[merge_utc['N_noise%s' % i] == 0]) != 0:
+            y_min = np.min(merge_utc[merge_utc['N_noise%s' % i] > 5]['N_noise%s' % i]) - 30
+            y_max = np.max(merge_utc[merge_utc['N_noise%s' % i] > 5]['N_noise%s' % i]) + 30
+            ax.set_ylim([y_min, y_max])
         ax.grid()
         ax0 = ax.twinx()
         ax0.set_ylim([970, 1020])
@@ -350,123 +363,144 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
 
     # Прописать рандомную функцию выбора даты
     # Заменить название рисунков пути к распределениям на даты из рандомной функции
-    R_distribution = pd.read_csv(
-        '{}\\sp\\4R{:02}-{:02}.{:02}'.format(file1cl,
-                                             b.month,
-                                             b.day,
-                                             b.year - 2000),
-        sep=' ', header=None, skipinitialspace=True, index_col=0)
-    R_distribution = R_distribution.dropna(axis=1, how='all')
-    R_distribution.columns = distribution_cols
+    try:
+        R_distribution = pd.read_csv(
+            '{}\\sp\\4R{:02}-{:02}.{:02}'.format(file1cl,
+                                                 b.month,
+                                                 b.day,
+                                                 b.year - 2000),
+            sep=' ', header=None, skipinitialspace=True, index_col=0)
+        R_distribution = R_distribution.dropna(axis=1, how='all')
+        R_distribution.columns = distribution_cols
 
-    plt.figure(figsize=(18, 10))
-    plt.xlabel('R', fontsize=20)
-    plt.ylabel('Число событий', fontsize=20)
-    plt.xlim([0, 100])
-    plt.ylim([0, 12000])
-    plt.grid()
-    plt.minorticks_on()
-    box_1 = {'facecolor': 'white',  # цвет области
-             'edgecolor': 'red',  # цвет крайней линии
-             'boxstyle': 'round'}
-    plt.text(43, 12000, "за {:02}.{:02}.{:02}".format(b.day, b.month, b.year - 2000), bbox=box_1, fontsize=20)
-    plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
-    plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
-    plt.grid(which='minor',
-             color='k',
-             linestyle=':')
-    for i in range(1, 5):
-        plt.plot(R_distribution.index, R_distribution['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
-    plt.legend(loc="upper right")
-    plt.savefig(
-        '{}\\{}\\R_distribution{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-        bbox_inches='tight')
-    R_distribution_path = "{}\\{}\\R_distribution{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth,
-                                                                                     endday,
-                                                                                     endmonth)
+        plt.figure(figsize=(18, 10))
+        plt.xlabel('R', fontsize=20)
+        plt.ylabel('Число событий', fontsize=20)
+        plt.xlim([0, 100])
+        plt.ylim([0, 12000])
+        plt.grid()
+        plt.minorticks_on()
+        box_1 = {'facecolor': 'white',  # цвет области
+                 'edgecolor': 'red',  # цвет крайней линии
+                 'boxstyle': 'round'}
+        plt.text(43, 12000, "за {:02}.{:02}.{:02}".format(b.day, b.month, b.year - 2000), bbox=box_1, fontsize=20)
+        plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
+        plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
+        plt.grid(which='minor',
+                 color='k',
+                 linestyle=':')
+        for i in range(1, 5):
+            plt.plot(R_distribution.index, R_distribution['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
+        plt.legend(loc="upper right")
+        plt.savefig(
+            '{}\\{}\\R_distribution{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday,
+                                                                       endmonth),
+            bbox_inches='tight')
+        R_distribution_path = "{}\\{}\\R_distribution{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday,
+                                                                                         stmonth,
+                                                                                         endday,
+                                                                                         endmonth)
+    except:
+        print("такого файла нит 4R{:02}-{:02}.{:02}".format(
+            b.month,
+            b.day,
+            b.year - 2000))
+    try:
+        Front_time = pd.read_csv(
+            '{}\\sp\\4Tf{:02}-{:02}.{:02}'.format(file1cl,
+                                                  b.month,
+                                                  b.day,
+                                                  b.year - 2000),
+            sep=' ', header=None, skipinitialspace=True, index_col=0)
+        Front_time = Front_time.dropna(axis=1, how='all')
+        Front_time.columns = distribution_cols
 
-    Front_time = pd.read_csv(
-        '{}\\sp\\4Tf{:02}-{:02}.{:02}'.format(file1cl,
-                                              b.month,
-                                              b.day,
-                                              b.year - 2000),
-        sep=' ', header=None, skipinitialspace=True, index_col=0)
-    Front_time = Front_time.dropna(axis=1, how='all')
-    Front_time.columns = distribution_cols
+        plt.figure(figsize=(18, 10))
+        plt.xlabel('Время нарастаний фронта', fontsize=20)
+        plt.ylabel('Число событий', fontsize=20)
+        plt.yscale('log')
+        plt.xlim([0, 200])
+        plt.ylim([1, 10000])
+        plt.grid()
+        plt.minorticks_on()
+        plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
+        plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
+        box_1 = {'facecolor': 'white',  # цвет области
+                 'edgecolor': 'red',  # цвет крайней линии
+                 'boxstyle': 'round'}
+        plt.text(87, 10000, "за {:02}.{:02}.{:02}".format(b.day, b.month, b.year - 2000), bbox=box_1, fontsize=20)
+        plt.grid(which='minor',
+                 color='k',
+                 linestyle=':')
+        for i in range(1, 5):
+            plt.plot(Front_time.index, Front_time['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
+        plt.legend(loc="upper right")
+        plt.savefig(
+            '{}\\{}\\Front_time{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+            bbox_inches='tight')
+        Front_time_path = "{}\\{}\\Front_time{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth,
+                                                                                 endday,
+                                                                                 endmonth)
+    except:
+        print("такого файла нит 4Tf{:02}-{:02}.{:02}".format(
+            b.month,
+            b.day,
+            b.year - 2000))
 
-    plt.figure(figsize=(18, 10))
-    plt.xlabel('Время нарастаний фронта', fontsize=20)
-    plt.ylabel('Число событий', fontsize=20)
-    plt.yscale('log')
-    plt.xlim([0, 200])
-    plt.ylim([1, 10000])
-    plt.grid()
-    plt.minorticks_on()
-    plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
-    plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
-    box_1 = {'facecolor': 'white',  # цвет области
-             'edgecolor': 'red',  # цвет крайней линии
-             'boxstyle': 'round'}
-    plt.text(87, 10000, "за {:02}.{:02}.{:02}".format(b.day, b.month, b.year - 2000), bbox=box_1, fontsize=20)
-    plt.grid(which='minor',
-             color='k',
-             linestyle=':')
-    for i in range(1, 5):
-        plt.plot(Front_time.index, Front_time['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
-    plt.legend(loc="upper right")
-    plt.savefig(
-        '{}\\{}\\Front_time{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-        bbox_inches='tight')
-    Front_time_path = "{}\\{}\\Front_time{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
-                                                                             endmonth)
+    try:
+        distribution_cols = []
+        for i in range(4):
+            distribution_cols.append("det%s" % (i + 1))
+        for i in range(4):
+            distribution_cols.append("noise%s" % (i + 1))
 
-    distribution_cols = []
-    for i in range(4):
-        distribution_cols.append("det%s" % (i + 1))
-    for i in range(4):
-        distribution_cols.append("noise%s" % (i + 1))
+        N_amp = pd.read_csv(
+            '{}\\sp\\4sp{:02}-{:02}.{:02}'.format(file1cl,
+                                                  b.month,
+                                                  b.day,
+                                                  b.year - 2000),
+            sep=' ', header=None, skipinitialspace=True, index_col=0)
+        N_amp = N_amp.dropna(axis=1, how='all')
+        N_amp.columns = distribution_cols
 
-    N_amp = pd.read_csv(
-        '{}\\sp\\4sp{:02}-{:02}.{:02}'.format(file1cl,
-                                              b.month,
-                                              b.day,
-                                              b.year - 2000),
-        sep=' ', header=None, skipinitialspace=True, index_col=0)
-    N_amp = N_amp.dropna(axis=1, how='all')
-    N_amp.columns = distribution_cols
+        plt.figure(figsize=(18, 10))
+        plt.xlabel('Амплитуда', fontsize=20)
+        plt.ylabel('Число событий', fontsize=20)
+        plt.yscale('log')
+        plt.xlim([0, 250])
+        plt.ylim([1, 10000])
+        plt.grid()
+        plt.minorticks_on()
+        plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
+        plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
+        plt.grid(which='minor',
+                 color='k',
+                 linestyle=':')
+        Nline = []
+        Noiseline = []
+        for i in range(1, 5):
+            n_line, = plt.plot(N_amp.index, N_amp['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
+            Nline.append(n_line)
+        for i in range(1, 5):
+            noise_line, = plt.plot(N_amp.index, N_amp['noise%s' % i], label='Детектор %s' % i, linewidth=4.5)
+            Noiseline.append(noise_line)
+        box_1 = {'facecolor': 'white',  # цвет области
+                 'edgecolor': 'red',  # цвет крайней линии
+                 'boxstyle': 'round'}
+        plt.text(110, 10000, "за {:02}.{:02}.{:02}".format(b.day, b.month, b.year - 2000), bbox=box_1, fontsize=20)
+        first_legend = plt.legend(handles=Nline, loc='upper center', bbox_to_anchor=(0.75, 1), title='Нейтроны')
+        plt.gca().add_artist(first_legend)
+        plt.legend(handles=Noiseline, loc='upper right', title='Шумы')
+        plt.savefig('{}\\{}\\N_amp{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
+                    bbox_inches='tight')
+        N_amp_path = "{}\\{}\\N_amp{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
+                                                                       endmonth)
 
-    plt.figure(figsize=(18, 10))
-    plt.xlabel('Амплитуда', fontsize=20)
-    plt.ylabel('Число событий', fontsize=20)
-    plt.yscale('log')
-    plt.xlim([0, 250])
-    plt.ylim([1, 10000])
-    plt.grid()
-    plt.minorticks_on()
-    plt.tick_params(axis='both', which='minor', direction='out', length=10, width=2, pad=10)
-    plt.tick_params(axis='both', which='major', direction='out', length=20, width=4, pad=10)
-    plt.grid(which='minor',
-             color='k',
-             linestyle=':')
-    Nline = []
-    Noiseline = []
-    for i in range(1, 5):
-        n_line, = plt.plot(N_amp.index, N_amp['det%s' % i], label='Детектор %s' % i, linewidth=4.5)
-        Nline.append(n_line)
-    for i in range(1, 5):
-        noise_line, = plt.plot(N_amp.index, N_amp['noise%s' % i], label='Детектор %s' % i, linewidth=4.5)
-        Noiseline.append(noise_line)
-    box_1 = {'facecolor': 'white',  # цвет области
-             'edgecolor': 'red',  # цвет крайней линии
-             'boxstyle': 'round'}
-    plt.text(110, 10000, "за {:02}.{:02}.{:02}".format(b.day, b.month, b.year - 2000), bbox=box_1, fontsize=20)
-    first_legend = plt.legend(handles=Nline, loc='upper center', bbox_to_anchor=(0.75, 1), title='Нейтроны')
-    plt.gca().add_artist(first_legend)
-    plt.legend(handles=Noiseline, loc='upper right', title='Шумы')
-    plt.savefig('{}\\{}\\N_amp{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
-                bbox_inches='tight')
-    N_amp_path = "{}\\{}\\N_amp{:02}-{:02}-{:02}-{:02}.png".format(pathpic, styear, stday, stmonth, endday,
-                                                                   endmonth)
+    except:
+        print("такого файла нит 4sp{:02}-{:02}.{:02}".format(
+            b.month,
+            b.day,
+            b.year - 2000))
 
     doc = Document()
 
@@ -593,7 +627,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
             run.font.bold = True
 
     for row in range(1, len(failstr_begin) + 2):
-        for col in range(2):
+        for col in range(1):
             # получаем ячейку таблицы
             cell = err.cell(row, col)
             # записываем в ячейку данные
@@ -722,6 +756,64 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         cell.width = Inches(1.075)
 
     space = doc.add_paragraph()
+
+    desc = doc.add_paragraph(
+        'Таблица 5: Коеффициент B',
+        style='PItalic')
+
+    B = doc.add_table(3, 5, doc.styles['Table Grid'])
+    # B.alignment = WD_TABLE_ALIGNMENT.CENTER
+    B.cell(0, 0).text = '№ детектора'
+    B.cell(0, 1).text = '1'
+    B.cell(0, 2).text = '2'
+    B.cell(0, 3).text = '3'
+    B.cell(0, 4).text = '4'
+    B.cell(1, 0).text = 'B нейтронных импульсов'
+    print(B_koef)
+    print(B_noise_koef)
+    for i in range(1, 5):
+        B.cell(1, i).text = str(round(B_koef[i - 1], 2))
+    B.cell(2, 0).text = 'B шумовых импульсов'
+    for i in range(1, 5):
+        B.cell(2, i).text = str(round(B_noise_koef[i - 1], 2))
+
+    for row in range(1):
+        for col in range(5):
+            # получаем ячейку таблицы
+            cell = B.cell(row, col)
+            # записываем в ячейку данные
+            run = cell.paragraphs[0].runs[0]
+            run.font.bold = True
+            run.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for row in range(1, 3):
+        for col in range(1):
+            # получаем ячейку таблицы
+            cell = B.cell(row, col)
+            # записываем в ячейку данные
+            run = cell.paragraphs[0].runs[0]
+            run.font.bold = True
+            run.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for row in range(3):
+        for col in range(1, 5):
+            cell = B.cell(row, col)
+            # записываем в ячейку данные
+            para_ph = cell.paragraphs[0]
+            para_ph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    for cell in B.columns[0].cells:
+        cell.width = Inches(3)
+    for cell in B.columns[1].cells:
+        cell.width = Inches(1.075)
+    for cell in B.columns[2].cells:
+        cell.width = Inches(1.075)
+    for cell in B.columns[3].cells:
+        cell.width = Inches(1.075)
+    for cell in B.columns[4].cells:
+        cell.width = Inches(1.075)
+
+    space = doc.add_paragraph()
     if (mask_checker):
         desc = doc.add_paragraph('Выборка данных с помощью маски не была произведена',
                                  style='Headstyle')
@@ -783,32 +875,35 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
 
     space = doc.add_paragraph()
 
-    doc.add_picture(N_amp_path, width=Inches(6))
-    last_paragraph = doc.paragraphs[-1]
-    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    try:
+        doc.add_picture(N_amp_path, width=Inches(6))
+        last_paragraph = doc.paragraphs[-1]
+        last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    desc = doc.add_paragraph(
-        'Амплитудные распределения сигналов',
-        style='Headgraf')
+        desc = doc.add_paragraph(
+            'Амплитудные распределения сигналов',
+            style='Headgraf')
 
-    space = doc.add_paragraph()
+        space = doc.add_paragraph()
 
-    doc.add_picture(Front_time_path, width=Inches(6))
-    last_paragraph = doc.paragraphs[-1]
-    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_picture(Front_time_path, width=Inches(6))
+        last_paragraph = doc.paragraphs[-1]
+        last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
-    run = doc.add_paragraph().add_run()
-    run.add_break(WD_BREAK.PAGE)
+        run = doc.add_paragraph().add_run()
+        run.add_break(WD_BREAK.PAGE)
 
-    desc = doc.add_paragraph(
-        'Распределения сигналов по параметру R (Af/Amax)',
-        style='Headgraf')
+        desc = doc.add_paragraph(
+            'Распределения сигналов по параметру R (Af/Amax)',
+            style='Headgraf')
 
-    space = doc.add_paragraph()
+        space = doc.add_paragraph()
 
-    doc.add_picture(R_distribution_path, width=Inches(6))
-    last_paragraph = doc.paragraphs[-1]
-    last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_picture(R_distribution_path, width=Inches(6))
+        last_paragraph = doc.paragraphs[-1]
+        last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    except:
+        print("Не было данных о графике распределения")
 
     add_page_number(doc.sections[0].footer.paragraphs[0])
 
