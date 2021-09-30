@@ -885,7 +885,9 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
             style='Headgraf')
 
         space = doc.add_paragraph()
-
+    except:
+        print("Не было данных о графике распределения")
+    try:
         doc.add_picture(Front_time_path, width=Inches(6))
         last_paragraph = doc.paragraphs[-1]
         last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -898,7 +900,9 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
             style='Headgraf')
 
         space = doc.add_paragraph()
-
+    except:
+        print("Не было данных о графике распределения")
+    try:
         doc.add_picture(R_distribution_path, width=Inches(6))
         last_paragraph = doc.paragraphs[-1]
         last_paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
