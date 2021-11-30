@@ -159,7 +159,7 @@ def First_Proccessing(stday, stmonth, styear, endday, endmonth, endyear, path, p
     for i in range(1, 5):
         merge_utc['corr_N%s' % i] = merge_utc['Nn%s' % i] - press_for_fixed_N[i - 1]
         merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] > 10, 0, inplace=True)
-        merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] != merge_utc['Nn%s' % i], 0, inplace=True)
+        # merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] != merge_utc['Nn%s' % i], 0, inplace=True)
         corr_N.append(merge_utc['corr_N%s' % i])
         ax = axs[i - 1]
         ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
@@ -187,7 +187,7 @@ def First_Proccessing(stday, stmonth, styear, endday, endmonth, endyear, path, p
     for i in range(1, 5):
         merge_utc['corr_N_noise%s' % i] = merge_utc['N_noise%s' % i] - press_for_fixed_N_noise[i - 1]
         merge_utc['corr_N_noise%s' % i].where(merge_utc['corr_N_noise%s' % i] > 10, 0, inplace=True)
-        merge_utc['corr_N%s' % i].where(merge_utc['corr_N_noise%s' % i] != merge_utc['N_noise%s' % i], 0, inplace=True)
+        # merge_utc['corr_N%s' % i].where(merge_utc['corr_N_noise%s' % i] != merge_utc['N_noise%s' % i], 0, inplace=True)
         corr_N_noise.append(merge_utc['corr_N_noise%s' % i])
         ax = axs[i - 1]
         ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
