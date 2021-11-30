@@ -280,7 +280,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     for i in range(1, 5):
         merge_utc['corr_N%s' % i] = merge_utc['Nn%s' % i] - press_for_fixed_N[i - 1]
         merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] > 10, 0, inplace=True)
-        merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] != merge_utc['Nn%s' % i], 0, inplace=True)
+        # merge_utc['corr_N%s' % i].where(merge_utc['corr_N%s' % i] != merge_utc['Nn%s' % i], 0, inplace=True)
         corr_N.append(merge_utc['corr_N%s' % i])
         ax = axs[i - 1]
         if len(merge_utc[merge_utc['Nn%s' % i] == 0]) != 0:
@@ -303,7 +303,8 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         ax.plot(merge_utc.index, merge_utc['corr_N%s' % i], label='N%s' % i, linewidth=1,
                 color='red')
 
-        ax0.plot(range(0, len(mean_pressure_uragan)), mean_pressure_uragan, linewidth=2, color='blue')
+        ax0.scatter(range(0, len(mean_pressure_uragan)), mean_pressure_uragan, s=2 ,c='blue')
+        # linewidth = 2,
         ax.set_xticks(list(range(0, merge_utc.index.max(), 288 * 4)))
         ax.set_xticklabels(merge_utc['DATE'].dt.date.unique().tolist()[::4])
     plt.savefig('{}\\{}\\Nn300c{:02}-{:02}-{:02}-{:02}.png'.format(pathpic, styear, stday, stmonth, endday, endmonth),
@@ -315,7 +316,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     for i in range(1, 5):
         merge_utc['corr_N_noise%s' % i] = merge_utc['N_noise%s' % i] - press_for_fixed_N_noise[i - 1]
         merge_utc['corr_N_noise%s' % i].where(merge_utc['corr_N_noise%s' % i] > 10, 0, inplace=True)
-        merge_utc['corr_N%s' % i].where(merge_utc['corr_N_noise%s' % i] != merge_utc['N_noise%s' % i], 0, inplace=True)
+        # merge_utc['corr_N_noise%s' % i].where(merge_utc['corr_N_noise%s' % i] != merge_utc['N_noise%s' % i], 0, inplace=True)
         corr_N_noise.append(merge_utc['corr_N_noise%s' % i])
         ax = axs[i - 1]
         ax.set_title('Детектор %s' % i, fontsize=18, loc='left')
@@ -339,7 +340,8 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
         ax.plot(merge_utc.index, merge_utc['corr_N_noise%s' % i], label='N%s' % i,
                 linewidth=1,
                 color='red')
-        ax0.plot(range(0, len(mean_pressure_uragan)), mean_pressure_uragan, linewidth=2, color='blue')
+        ax0.scatter(range(0, len(mean_pressure_uragan)), mean_pressure_uragan, s=2, c='blue')
+        #  linewidth=2,
         ax.set_xticks(list(range(0, merge_utc.index.max(), 288 * 4)))
         ax.set_xticklabels(merge_utc['DATE'].dt.date.unique().tolist()[::4])
     plt.savefig(
@@ -758,7 +760,7 @@ def secProccesing(stday, stmonth, styear, endday, endmonth, endyear, path, pathp
     space = doc.add_paragraph()
 
     desc = doc.add_paragraph(
-        'Таблица 5: Коеффициент B',
+        'Таблица 5: Коэффициент B',
         style='PItalic')
 
     B = doc.add_table(3, 5, doc.styles['Table Grid'])
