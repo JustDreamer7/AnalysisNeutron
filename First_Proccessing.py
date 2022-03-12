@@ -251,17 +251,24 @@ def First_Proccessing(stday, stmonth, styear, endday, endmonth, endyear, path, p
     RH = ['-'] * len(merged_df.index)
     PR = ['-'] * len(merged_df.index)
     vaisala_data['date'] = pd.to_datetime(vaisala_data['date'])
+    # vaisala_data['TA']=vaisala_data['TA'].str.replace('/', '0.0')
+    # vaisala_data['TA']=vaisala_data['TA'].astype(float)
+    print([i for i in vaisala_data['TA'] if type(i) is not float])
+    print(len([i for i in vaisala_data['TA'] if type(i) is not float]))
+    print(len(vaisala_data['TA']))
+    print(len(TA))
+    print(len(merged_df))
     for i in range(len(merged_df.index)):
         for j in range(len(vaisala_data.index)):
             if vaisala_data['date'][j] == merged_df['DATE'][i] and vaisala_data['time'][j].split(':')[0] == \
                     merged_df['Time'][i].split(':')[0] \
                     and abs(int(vaisala_data['time'][j].split(':')[1]) - int(merged_df['Time'][i].split(':')[1])) <= 3:
-                if TA[i] == '-':
+                if TA[i] == '-'and vaisala_data['TA'][j] != '/':
                     TA[i] = str(
                         str(vaisala_data['TA'][j]).split('.')[0] + ',' + str(vaisala_data['TA'][j]).split('.')[1])
-                if RH[i] == '-':
+                if RH[i] == '-' and vaisala_data['RH'][j] != '/':
                     RH[i] = vaisala_data['RH'][j]
-                if PR[i] == '-':
+                if PR[i] == '-' and vaisala_data['PR'][j] != '/':
                     PR[i] = vaisala_data['PR'][j]
                 vaisala_data = vaisala_data.drop(index=[j]).reset_index(drop=True)
                 break
@@ -298,7 +305,7 @@ def First_Proccessing(stday, stmonth, styear, endday, endmonth, endyear, path, p
                     corr_merged_df['Time'][i].split(':')[0] \
                     and abs(
                 int(vaisala_data['time'][j].split(':')[1]) - int(corr_merged_df['Time'][i].split(':')[1])) <= 3:
-                if TA[i] == '-':
+                if TA[i] == '-' and vaisala_data['TA'][j] != '/':
                     TA[i] = str(
                         str(vaisala_data['TA'][j]).split('.')[0] + ',' + str(vaisala_data['TA'][j]).split('.')[1])
                 vaisala_data = vaisala_data.drop(index=[j]).reset_index(drop=True)
